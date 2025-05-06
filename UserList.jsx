@@ -9,13 +9,11 @@ function UserList() {
       const data = await response.json();
       setUsers(data);
     }
-
     fetchUsers();
   }, []);
 
   return (
     <div>
-      <h1>Users List</h1>
       <ul>
         {users.map((user) => (
           <li key={user.id}>{user.email} ({user.role})</li>
