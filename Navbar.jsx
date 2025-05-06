@@ -1,48 +1,54 @@
 import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { logout } from '../authReducer';
 
 function Navbar() {
-  const user = useSelector((state) => state.auth.user); 
+  const user = useSelector((state) => state.auth.user);
   const dispatch = useDispatch();
-  const navigate = useNavigate();
 
-  const handleLogout = () => {
-    dispatch(logout()); 
-    localStorage.removeItem('user'); 
-    navigate('/login'); 
-  };
-
-  if (!user) {
-    return null;
-  }
-
-  return (
-    <nav>
-      <ul>
-        <li><Link to="/">Home</Link></li>
-        {user.role === 'student' && (
-          <li><Link to="/courses">Courses</Link></li>
-        )}
-        {user.role === 'teacher' && (
-          <>
-            <li><Link to="/update-courses">Update Courses</Link></li>
+return (
+  <nav>
+    <ul>
+      {!user ? (
+        <>
+          <li><Link to="/login">Login</Link></li>
+          <li><Link to="/register">Register</Link></li>
+        </>
+      ) : (
+        <>
+          {user.role === 'student' && (
+            <>
+            <li><Link to="/profile">Profile</Link></li>
             <li><Link to="/courses">Courses</Link></li>
-          </>
-        )}
-        {user.role === 'admin' && (
-          <>
-            <li><Link to="/user-list">Users</Link></li>
-            <li><Link to="/delete-users">Delete Users</Link></li>
+            <li><Link to="/my-courses">My courses</Link></li>
+            </>
+          )}
+          {user.role === 'teacher' && (
+            <>
+            <li><Link to="/profile">Profile</Link></li>
+            <li><Link to="/teacher/courses">Courses</Link></li>
+              <li><Link to="/update-courses">Update Courses</Link></li>
+              <li><Link to="/create-course">Create Course</Link></li>
+              <li><Link to="/create-lesson">Create Lesson</Link></li>
+              <li><Link to="/update-lesson">Update Lesson</Link></li>
+            </>
+          )}
+          {user.role === 'admin' && (
+            <>
+            <li><Link to="/profile">Profile</Link></li>
+            <li><Link to="/teacher/courses">Courses</Link></li>
+              <li><Link to="/approve-enrollments">Approve enrollments</Link></li>
+              <li><Link to="/user-list">Users</Link></li>
+            </>
+          )}
+          <li><button onClick={() => dispatch(logout())}>Logout</button></li>
           </>
         )}
       </ul>
-      <div className="logout-container"> 
-        <button onClick={handleLogout}>Logout</button>
-      </div>
     </nav>
   );
 }
 
 export default Navbar;
+
