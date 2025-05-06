@@ -1,134 +1,109 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import bcrypt from 'bcryptjs';
 
 function Register() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('student');
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [image, setImage] = useState('');
   const navigate = useNavigate();
 
+  // Обработчик для загрузки изображения в формате Base64
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImage(reader.result); // Преобразуем файл в строку Base64
+      };
+      reader.readAsDataURL(file); // Чтение файла как Base64
+    }
+  };
+
+  // Обработчик регистрации
   async function handleRegister(e) {
     e.preventDefault();
-  
-    setIsLoading(true);
-    setError('');
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    try {
-      const hashedPassword = await bcrypt.hash(password, 10);
+    const requestData = {
+      email,
+      password: hashedPassword,
+      role,
+      image, // Отправляем Base64 изображение
+    };
 
-      const requestData = {
-        email,
-        password: hashedPassword,
-        role,
-      };
+    const response = await fetch('http://localhost:3001/users', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestData),
+    });
 
-      const response = await fetch('http://localhost:3001/users', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestData),
-      });
-
-      if (response.ok) {
-        alert('успешно');
-        navigate('/login');
-      } else {
-        const errorData = await response.json();
-        setError(errorData.message || 'ошибка');
-      }
-    } catch (err) {
-      setError('ошибка');
-      console.error('Error:', err);
-    } finally {
-      setIsLoading(false);
+    if (response.ok) {
+      alert('Регистрация прошла успешно! Войдите в аккаунт.');
+      navigate('/login');
+    } else {
+      alert('Ошибка регистрации. Попробуйте снова.');
     }
   }
 
   return (
-    <div className="regWrapper">
-      <div className="regContainer">
+    <div>
+      <h2>Регистрация</h2>
+      <form onSubmit={handleRegister}>
         <div>
-          <h2 className="regTitle">
-            Регистрация
-          </h2>
+          <label>Email:</label>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
         </div>
 
-        {error && (
-          <div className="errorMsg" role="alert">
-            <span className="errorText">{error}</span>
-          </div>
-        )}
+        <div>
+          <label>Пароль:</label>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+        </div>
 
-        <form className="regForm" onSubmit={handleRegister}>
-          <div className="fieldsBox">
-            <div>
-              <label htmlFor="email-address" className="hiddenLabel">Email</label>
-              <input
-                id="email-address"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="inputField topField"
-                placeholder="Email"
-              />
-            </div>
-            <div>
-              <label htmlFor="password" className="hiddenLabel">Пароль</label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="new-password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="inputField midField"
-                placeholder="Пароль"
-              />
-            </div>
-            
-            <div>
-              <label htmlFor="role" className="hiddenLabel">Роль</label>
-              <select
-                id="role"
-                name="role"
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-                required
-                className="inputField bottomField"
-              >
-                <option value="student">Студент</option>
-                <option value="teacher">Преподаватель</option>
-              </select>
-            </div>
-          </div>
+        <div>
+          <label>Роль:</label>
+          <select
+            value={role}
+            onChange={(e) => setRole(e.target.value)}
+            required
+          >
+            <option value="student">Student</option>
+            <option value="teacher">Teacher</option>
+          </select>
+        </div>
 
-          <div>
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="regBtn"
-            >
-              {isLoading ? 'Регистрация...' : 'Зарегистрироваться'}
-            </button>
-          </div>
+        <div>
+          <label>Avatar:</label>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+            required
+          />
+          {image && (
+            <img
+              src={image}
+              alt="Avatar preview"
+              style={{ width: '100px', height: '100px', objectFit: 'cover', marginTop: '10px' }}
+            />
+          )}
+        </div>
 
-          <div className="loginLinkBox">
-            <p className="loginText">
-              <Link to="/login" className="loginLink">
-                Войти
-              </Link>
-            </p>
-          </div>
-        </form>
-      </div>
+        <button type="submit">Зарегистрироваться</button>
+      </form>
     </div>
   );
 }
