@@ -1,8 +1,12 @@
-import { createStore,  combineReducers } from 'redux';
+import { createStore, combineReducers } from 'redux';
 import { authReducer } from './authReducer';
+import { progressReducer } from './progressReducer';
 
 const rootReducer = combineReducers({
-    auth: authReducer,
-  });
+  auth: authReducer,
+  progress: progressReducer
+});
 
-export const store = createStore(rootReducer);
+const store = createStore(rootReducer);
+
+export default store;
