@@ -5,8 +5,8 @@ function Dashboard() {
   const user = useSelector((state) => state.auth.user);
 
   return (
-    <div>
-      <h1>Welcome to the Dashboard!</h1>
+    <div className='welcome'>
+      <h1>Welcome to the online courses website!</h1>
       <p>{`Hello, ${user.email}`}</p>
     </div>
   );
