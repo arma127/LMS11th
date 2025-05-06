@@ -7,21 +7,24 @@ function UpdateCourses() {
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [courseTitle, setCourseTitle] = useState('');
   const [courseDescription, setCourseDescription] = useState('');
+  const [courseImage, setCourseImage] = useState('');
 
   useEffect(() => {
     const fetchCourses = async () => {
       const response = await fetch('http://localhost:3001/courses');
       const data = await response.json();
-      setCourses(data);
+      const teacherCourses = data.filter(course => course.teacherId === user.id);
+      setCourses(teacherCourses);
     };
     fetchCourses();
-  }, []);
+  }, [user.id]);
 
   const handleUpdate = async () => {
     const updatedCourse = {
       ...selectedCourse,
       title: courseTitle,
       description: courseDescription,
+      image: courseImage,
     };
 
     await fetch(`http://localhost:3001/courses/${selectedCourse.id}`, {
@@ -39,16 +42,12 @@ function UpdateCourses() {
     );
     setCourseTitle('');
     setCourseDescription('');
+    setCourseImage('');
     setSelectedCourse(null);
   };
 
-  if (user?.role !== 'teacher') {
-    return <p>YOU DO NOT HAVE RIGHTS</p>;
-  }
-
   return (
-    <div>
-      <h2>Update Courses</h2>
+    <form>
       <select
         value={selectedCourse?.id || ''}
         onChange={(e) => {
@@ -57,6 +56,7 @@ function UpdateCourses() {
           setSelectedCourse(course);
           setCourseTitle(course?.title || '');
           setCourseDescription(course?.description || '');
+          setCourseImage(course?.image || '');
         }}
       >
         <option value="">Select a course</option>
@@ -84,10 +84,17 @@ function UpdateCourses() {
             cols="50"
           />
           <br />
-          <button onClick={handleUpdate}>Update</button>
+          <input
+            type="text"
+            value={courseImage}
+            onChange={(e) => setCourseImage(e.target.value)}
+            placeholder="Image URL"
+          />
+          <br />
+          <button type="button" onClick={handleUpdate}>Update</button>
         </div>
       )}
-    </div>
+    </form>
   );
 }
 
