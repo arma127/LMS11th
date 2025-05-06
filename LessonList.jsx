@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 
 function LessonList() {
   const { courseId } = useParams();
   const [lessons, setLessons] = useState([]);
+  const completedLessons = useSelector(state => state.progress.completedLessons[courseId] || []);
+  const navigate = useNavigate();
 
   useEffect(() => {
     async function fetchLessons() {
@@ -11,16 +14,23 @@ function LessonList() {
       const data = await response.json();
       setLessons(data);
     }
-
     fetchLessons();
   }, [courseId]);
 
+  const progress = lessons.length
+    ? Math.round((completedLessons.length / lessons.length) * 100)
+    : 0;
+
   return (
     <div>
-      <h1>Lessons</h1>
+      <h2>Прогресс: {progress}%</h2>
       <ul>
         {lessons.map((lesson) => (
-          <li key={lesson.id}>{lesson.title}</li>
+          <li key={lesson.id}>
+            <h3>{lesson.title}</h3>
+            <button onClick={() => navigate(`/courses/${courseId}/lessons/${lesson.id}`)}>Пройти</button>
+            <p>Статус: {completedLessons.includes(lesson.id) ? 'Пройдено' : 'Не пройдено'}</p>
+          </li>
         ))}
       </ul>
     </div>
